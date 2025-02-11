@@ -213,3 +213,4 @@ PySide6를 사용하여 macOS용 .app 번들을 배포했으나, Finder에서 �
 <br>
 
 ## GIF / 스크린샷
+![demo](https://github.com/user-attachments/assets/f1691738-a8aa-4c0d-8c98-08a8939faa76)
