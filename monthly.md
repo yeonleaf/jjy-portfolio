@@ -15,14 +15,14 @@ SK C&C BTV 운영 월간보고용 자동화 애플리케이션
   
 <br>
 
-## 🔧 기술
+## 기술
 - 언어: Python 3.12
 - GUI 프레임워크 : pyside6
 - PPTX 작성 : python-pptx
 
 <br>
 
-## 🚀 주요 기능
+## 주요 기능
 - 명시한 년월, 시스템의 월간 보고용 PPTX 파일을 생성
 - (optional) 엑셀 XLSX 이슈리스트 생성
 - (optional) gpt o1-mini와 연동하여 insight 생성
