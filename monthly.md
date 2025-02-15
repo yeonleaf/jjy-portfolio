@@ -64,13 +64,13 @@ HTTP/1.1 429 Too Many Requests
 ```
 - 사내에서 사용하는 Jira 서버에 Personal Access Token으로 API를 호출하던 도중, 서버 측에서 해당 토큰을 차단.
 - 일괄적으로 429 (Too Many Requests) 상태를 반환하여, 실제로는 **Token이 차단됨** 인지 **Rate Limit 초과**인지 구분이 불가.
-- 만에 하나 실제로 Rate Limit가 걸려 발생한 429일 수도 있으므로, 재시도 로직과 대기(Backoff) 로직을 구현하여 클라이언트가 서버에 무리한 요청을 보내지 않도록 보완.
+- 만에 하나 실제로 Rate Limit가 걸려 발생한 429일 수도 있으므로, 재시도 로직과 대기(Backoff) 로직을 구현하여 보완.
 
 #### ✅ 해결 방법
 1. 기본 대기 시간을 1초로 설정
 
 - 일반적으로 1초는 긴 편이지만, 관리자용 내부 앱에서는 성능보다 Rate Limit 초과로 고객사에 불편을 주지 않는 것이 더 중요.
-- 서버에서 준 헤더(Retry-After)가 존재하면 그 값을 우선 사용하여 1초 미만 간격으로도 추가 요청을 시도할 수 있게 함.
+- 단, 서버에서 준 Rate Limit 관련 헤더 정보가 존재하면 1초 미만 간격으로도 추가 요청을 시도할 수 있게 함.
 
 2. 429 응답 시, 헤더 정보(X-RateLimit-Remaining, Retry-After)를 참조한 Backoff 로직 적용
 ```python
@@ -218,7 +218,7 @@ PySide6를 사용하여 macOS용 .app 번들을 배포했으나, Finder에서 �
 2. 라이브러리 로딩 문제 분석
 - DYLD_PRINT_LIBRARIES=1로 실행 로그를 확인하려 했으나 아무 출력이 없었음
 - otool -L main을 사용해 의존 라이브러리 확인 결과, @executable_path/Python이 포함되어 있었음
-- Python 실행 파일이 존재하지 않거나, 실행 권한(chmod +x)이 없을 가능성이 있다고 판단
+- 터미널에서 unix 실행 파일을 실행할 때와 Finder에서 실행할 때 Python 경로 변수에 차이가 있어 발생하는 문제로 추정함 
 
 #### ✅ 해결 방법
 대체 실행 방식 채택
