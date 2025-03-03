@@ -10,19 +10,8 @@
 
 ## 개요
 SK C&C BTV 운영 월간보고용 자동화 애플리케이션
-- 수행 기간 : 1.5개월
-- 수행 인원 : 1인
-  
-<br>
 
-## 기술
-- 언어: Python 3.12
-- GUI 프레임워크 : pyside6
-- PPTX 작성 : python-pptx
-
-<br>
-
-## 주요 기능
+#### 핵심 과제
 - 명시한 년월, 시스템의 월간 보고용 PPTX 파일을 생성
 - (optional) 엑셀 XLSX 이슈리스트 생성
 - (optional) gpt o1-mini와 연동하여 insight 생성
@@ -32,6 +21,11 @@ SK C&C BTV 운영 월간보고용 자동화 애플리케이션
   	- 일자 계산
   	- PPT 단락 추가 방식
   	- PPT 컬럼 별 디폴트 텍스트/bold/색상
+
+#### 개발 환경
+- 언어: Python 3.12
+- GUI 프레임워크 : pyside6
+- PPTX 작성 : python-pptx
 
 <br>
 
@@ -127,22 +121,22 @@ def fetch_with_retry(method, url, max_retries=5):
 ```
 zsh: segmentation fault  python3 -m src.main
 ```
-- PySide6 기반의 GUI 애플리케이션에서, QThread(Worker Thread)를 사용하여 비즈니스 로직을 수행함.
+- PySide6 기반의 GUI 애플리케이션에서 QThread(Worker Thread)를 사용하여 비즈니스 로직을 수행함.
 - 실시간 로그를 UI에 표시하기 위해 `logger().warning(...)`을 Worker Thread 내부에서 직접 호출함.
 - 실행 중 간헐적으로 segmentation fault 발생 → Python 프로세스가 비정상 종료됨.
 
 #### 🔍 해결 과정
 Python의 logging 모듈은 C 라이브러리 레벨에서 동작하는 경우 충돌 가능성이 존재
 - Worker Thread가 logging을 호출하면 내부적으로 C에서 실행되는 코드와 PyQt 이벤트 루프 간의 충돌이 발생할 수 있음.
-- 외부 유틸이 로깅을 호출하여 Worker Thread에서 실행되는 경우에도 같은 문제 발생
+- 로깅을 호출하는 외부 유틸이 Worker Thread에서 실행되는 경우에도 같은 문제 발생
 
 #### ✅ 해결 방법
 1. Worker Thread에서 직접 logging을 호출하지 않음 → 세그먼트 폴트 발생 가능성을 원천 차단.
-- Worker Thread에서는 logging을 직접 호출하는 대신, PyQt Signal을 사용하여 Main Thread로 로그를 전달하도록 수정.
+- Worker Thread에서는 logging을 직접 호출하는 대신, Signal을 사용하여 Main Thread로 로그를 전달하도록 수정.
 
 ```python
 class WorkerThread(QThread):
-    log_signal = Signal(str)  # 로그 메시지를 전달할 PyQt Signal
+    log_signal = Signal(str)  # 로그 메시지를 PyQt Signal
 
     def run(self):
         self.log_signal.emit("작업 시작")  # Worker Thread에서 Main Thread로 로그 전송
@@ -173,7 +167,7 @@ class MainApplication(QMainWindow):
 ```
 
 2. 외부 유틸 클래스(Fetch)에서 콜백 패턴을 적용하여 Worker Thread 내 logging 호출 제거
-- 콜백 함수(on_log)를 추가하여 로그를 Worker Thread로 넘기고, Worker Thread가 PyQt Signal을 통해 Main Thread로 전달.
+- 콜백 함수(on_log)를 추가하여 로그를 Worker Thread로 넘기고, Worker Thread가 Signal을 통해 Main Thread로 전달.
 ```python
 class Fetch:
     @staticmethod
@@ -206,9 +200,9 @@ class WorkerThread(QThread):
 
 ### PySide6 기반 macOS 애플리케이션 배포 문제 해결
 #### 📖 배경
-PySide6를 사용하여 macOS용 .app 번들을 배포했으나, Finder에서 더블클릭 시 실행되지 않는 문제가 발생.
+PySide6를 사용하여 macOS용 .app 번들을 배포했으나 Finder에서 더블클릭 시 실행되지 않는 문제가 발생.
 
-터미널에서 ./main을 직접 실행하면 정상적으로 동작했지만, Finder 실행에서는 아무런 로그도 출력되지 않고 종료.
+터미널에서 ./main을 직접 실행하면 정상적으로 동작했지만 Finder 실행에서는 아무런 로그도 출력되지 않고 종료.
 
 #### 🔍 해결 과정
 1. macOS 보안 정책 분석
